@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Videogames shop</title>
+  <meta charset="UTF-8"/>
+</head>
+<body>
+<h1>Список видеоигр</h1>
+<table border="1">
+  <thead>
+  <tr>
+    <th>Название</th>
+    <th>Разработчик</th>
+    <th>Жанр</th>
+    <th>Год выпуска</th>
+    <th>Вес файла</th>
+    <th>OS</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr th:each="game : ${games}">
+    <td th:text="${game.name}">Название игры</td>
+    <td th:text="${game.developer}">Разработчик</td>
+    <td th:text="${game.genre}">Жанр</td>
+    <td th:text="${game.year}">Год</td>
+    <td th:text="${game.fileSize}">Вес</td>
+    <td th:text="${game.os}">ОС</td>
+  </tr>
+  </tbody>
+</table>
+</body>
+</html>
