@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Детали игры</title>
+    <meta charset="UTF-8"/>
+</head>
+<body>
+<h1 th:text="'Детали игры: ' + ${game.name}">Детали игры</h1>
+
+<div>
+    <!-- Если вы храните путь к картинке в game.imageUrl -->
+    <img th:src="${game.imageUrl}" alt="Game Image" style="max-width: 300px;" />
+</div>
+
+<p><strong>Разработчик:</strong> <span th:text="${game.developer}">Developer</span></p>
+<p><strong>Жанр:</strong> <span th:text="${game.genre}">Genre</span></p>
+<p><strong>Год выпуска:</strong> <span th:text="${game.year}">Year</span></p>
+<p><strong>Вес файла (МБ):</strong> <span th:text="${game.fileSize}">Size</span></p>
+<p><strong>Поддерживаемая ОС:</strong> <span th:text="${game.os}">OS</span></p>
+
+<br>
+<!-- Кнопка назад на список всех игр -->
+<a th:href="@{/}">Вернуться к списку</a>
+</body>
+</html>

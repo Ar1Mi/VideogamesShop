@@ -6,25 +6,53 @@
 </head>
 <body>
 <h1>Список видеоигр</h1>
+
+<!-- Кнопка для перехода на форму добавления новой игры -->
+<a th:href="@{/games/new}">
+  <button>Добавить игру</button>
+</a>
+
+<br/><br/>
+
 <table border="1">
   <thead>
   <tr>
+    <th>ID</th>
     <th>Название</th>
     <th>Разработчик</th>
     <th>Жанр</th>
     <th>Год выпуска</th>
     <th>Вес файла</th>
     <th>OS</th>
+    <th>Действия</th>
   </tr>
   </thead>
   <tbody>
   <tr th:each="game : ${games}">
+    <td th:text="${game.id}">ID</td>
     <td th:text="${game.name}">Название игры</td>
     <td th:text="${game.developer}">Разработчик</td>
     <td th:text="${game.genre}">Жанр</td>
     <td th:text="${game.year}">Год</td>
     <td th:text="${game.fileSize}">Вес</td>
     <td th:text="${game.os}">ОС</td>
+    <td>
+      <!-- Кнопка/ссылка на страницу с подробной информацией -->
+      <a th:href="@{/games/details/{id}(id=${game.id})}">
+        <button>Детали</button>
+      </a>
+
+      <!-- Кнопка/ссылка на форму редактирования -->
+      <a th:href="@{/games/edit/{id}(id=${game.id})}">
+        <button>Редактировать</button>
+      </a>
+
+      <!-- Кнопка/ссылка на удаление; onclick - подтверждение -->
+      <a th:href="@{/games/delete/{id}(id=${game.id})}"
+         onclick="return confirm('Точно удалить игру: [[${game.name}]] ?');">
+        <button>Удалить</button>
+      </a>
+    </td>
   </tr>
   </tbody>
 </table>

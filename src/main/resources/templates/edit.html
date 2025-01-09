@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Редактирование игры</title>
+    <meta charset="UTF-8"/>
+</head>
+<body>
+<h1>Редактирование игры</h1>
+
+<form th:action="@{/games/edit}" th:object="${game}" method="post">
+    <!-- Поле ID (скрыто, чтобы передавать в модель) -->
+    <input type="hidden" th:field="*{id}"/>
+
+    <div>
+        <label for="name">Название</label>
+        <input type="text" id="name" th:field="*{name}" />
+        <!-- Выводим ошибку, если есть -->
+        <div th:if="${#fields.hasErrors('name')}"
+             th:errors="*{name}">Ошибка для поля Название</div>
+    </div>
+
+    <div>
+        <label for="developer">Разработчик</label>
+        <input type="text" id="developer" th:field="*{developer}" />
+        <div th:if="${#fields.hasErrors('developer')}"
+             th:errors="*{developer}">Ошибка для поля Разработчик</div>
+    </div>
+
+    <div>
+        <label for="genre">Жанр</label>
+        <input type="text" id="genre" th:field="*{genre}" />
+        <div th:if="${#fields.hasErrors('genre')}"
+             th:errors="*{genre}">Ошибка для поля Жанр</div>
+    </div>
+
+    <div>
+        <label for="year">Год выпуска</label>
+        <input type="number" id="year" th:field="*{year}" />
+        <div th:if="${#fields.hasErrors('year')}"
+             th:errors="*{year}">Ошибка для поля Год</div>
+    </div>
+
+    <div>
+        <label for="fileSize">Размер файла (МБ)</label>
+        <input type="number" step="0.1" id="fileSize" th:field="*{fileSize}" />
+        <div th:if="${#fields.hasErrors('fileSize')}"
+             th:errors="*{fileSize}">Ошибка для поля Вес файла</div>
+    </div>
+
+    <div>
+        <label for="os">Операционная система</label>
+        <input type="text" id="os" th:field="*{os}" />
+        <div th:if="${#fields.hasErrors('os')}"
+             th:errors="*{os}">Ошибка для поля ОС</div>
+    </div>
+
+    <div>
+        <label for="imageUrl">Ссылка на изображение</label>
+        <input type="text" id="imageUrl" th:field="*{imageUrl}" />
+        <!-- валидации тут может и не быть, если не нужно -->
+    </div>
+
+    <br/>
+    <button type="submit">Сохранить</button>
+</form>
+
+<br/>
+<!-- Кнопка вернуться на главную -->
+<a th:href="@{/}">Вернуться к списку</a>
+
+</body>
+</html>
