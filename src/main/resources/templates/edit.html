@@ -7,7 +7,7 @@
 <body>
 <h1>Редактирование игры</h1>
 
-<form th:action="@{/games/edit}" th:object="${game}" method="post">
+<form th:action="@{/games/edit}" th:object="${game}" method="post" enctype="multipart/form-data">
     <!-- Поле ID (скрыто, чтобы передавать в модель) -->
     <input type="hidden" th:field="*{id}"/>
 
@@ -55,11 +55,10 @@
     </div>
 
     <div>
-        <label for="imageUrl">Ссылка на изображение</label>
-        <input type="text" id="imageUrl" th:field="*{imageUrl}" />
-        <!-- валидации тут может и не быть, если не нужно -->
+        <label for="file">Новое изображение</label>
+        <input type="file" name="file" id="file" />
+        <!-- Если не загружать новый файл, останется старое -->
     </div>
-
     <br/>
     <button type="submit">Сохранить</button>
 </form>

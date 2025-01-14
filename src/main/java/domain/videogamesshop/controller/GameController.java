@@ -1,16 +1,15 @@
 package domain.videogamesshop.controller;
 
 import domain.videogamesshop.model.Game;
+import domain.videogamesshop.service.FileService;
 import domain.videogamesshop.service.GameService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -19,6 +18,9 @@ public class GameController {
 
     @Autowired
     private GameService gameService;
+
+    @Autowired
+    private FileService fileService;
 
     @GetMapping("/")
     public String showGamesList(Model model) {
@@ -43,27 +45,89 @@ public class GameController {
     public String showEditForm(@PathVariable Long id, Model model) {
         Game game = gameService.findById(id)
                 .orElseThrow(() -> new RuntimeException("Game not found"));
-
         model.addAttribute("game", game);
-        return "edit";  // edit.html
+        return "edit";
     }
 
-    // Сохранить изменения (POST)
     @PostMapping("/games/edit")
     public String updateGame(@Valid @ModelAttribute("game") Game game,
                              BindingResult bindingResult,
+                             @RequestParam("file") MultipartFile file, // получаем загруженный файл
                              Model model) {
-        // Проверяем, есть ли ошибки валидации
         if (bindingResult.hasErrors()) {
-            // Возвращаемся обратно на форму редактирования,
-            // где отобразим сообщения об ошибках
             return "edit";
         }
 
-        // Если ошибок нет — сохраняем (обновляем) данные
+        // Находим старый объект (чтобы узнать старый файл, если было изображение)
+        Game oldGame = gameService.findById(game.getId())
+                .orElseThrow(() -> new RuntimeException("Game not found"));
+
+        // Если пользователь загрузил новый файл, удаляем старый и сохраняем новый
+        if (file != null && !file.isEmpty()) {
+            // Удаляем старый файл (если был)
+            if (oldGame.getImageUrl() != null && !oldGame.getImageUrl().isBlank()) {
+                fileService.deleteFile(oldGame.getImageUrl());
+            }
+            // Сохраняем новый
+            String newFilename = fileService.saveFile(file);
+            game.setImageUrl(newFilename); // в БД мы храним имя файла, например "uuid_originalName.jpg"
+        } else {
+            // Если новый файл не загружен, оставляем старый путь к картинке
+            game.setImageUrl(oldGame.getImageUrl());
+        }
+
+        // Сохраняем обновлённую игру
         gameService.save(game);
 
-        // Редирект на главную страницу (или куда нужно)
         return "redirect:/";
     }
+
+    @GetMapping("/games/new")
+    public String showCreateForm(Model model) {
+        // Создаём пустой объект Game для привязки формы
+        Game newGame = new Game();
+        model.addAttribute("game", newGame);
+        return "new"; // возврат к шаблону new.html
+    }
+
+    @PostMapping("/games/new")
+    public String createGame(@Valid @ModelAttribute("game") Game game,
+                             BindingResult bindingResult,
+                             @RequestParam("file") MultipartFile file) {
+        if (bindingResult.hasErrors()) {
+            // Если есть ошибки валидации, просто возвращаем ту же форму
+            return "new";
+        }
+
+        // Если пользователь загрузил файл
+        if (file != null && !file.isEmpty()) {
+            String filename = fileService.saveFile(file);
+            game.setImageUrl(filename);
+        }
+
+        // Сохраняем в БД
+        gameService.save(game);
+
+        // Перенаправляем на главную, где список всех игр
+        return "redirect:/";
+    }
+
+    @GetMapping("/games/delete/{id}")
+    public String deleteGame(@PathVariable Long id) {
+        // 1. Найти игру в БД (чтобы узнать, есть ли связанный файл)
+        Game game = gameService.findById(id)
+                .orElseThrow(() -> new RuntimeException("Game not found"));
+
+        // 2. Если у игры есть загруженная картинка, удаляем её
+        if (game.getImageUrl() != null && !game.getImageUrl().isBlank()) {
+            fileService.deleteFile(game.getImageUrl());
+        }
+
+        // 3. Удаляем запись из БД
+        gameService.deleteById(id);
+
+        // 4. Редирект на главную страницу (список игр)
+        return "redirect:/";
+    }
+
 }

@@ -9,7 +9,7 @@
 
 <div>
     <!-- Если вы храните путь к картинке в game.imageUrl -->
-    <img th:src="${game.imageUrl}" alt="Game Image" style="max-width: 300px;" />
+    <img th:src="@{'/uploads/' + ${game.imageUrl}}" alt="Game Image" style="max-width: 300px;" />
 </div>
 
 <p><strong>Разработчик:</strong> <span th:text="${game.developer}">Developer</span></p>
