@@ -48,10 +48,12 @@
       </a>
 
       <!-- Кнопка/ссылка на удаление; onclick - подтверждение -->
+    <td>
       <a th:href="@{/games/delete/{id}(id=${game.id})}"
-         onclick="return confirm('Точно удалить игру: [[${game.name}]] ?');">
+         onclick="return confirm('Точно удалить игру: [[${game.name}]]?');">
         <button>Удалить</button>
       </a>
+    </td>
     </td>
   </tr>
   </tbody>
