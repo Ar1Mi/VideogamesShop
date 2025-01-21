@@ -1,8 +1,10 @@
 package domain.videogamesshop.controller;
 
 import domain.videogamesshop.model.Game;
+import domain.videogamesshop.model.Platform;
 import domain.videogamesshop.service.FileService;
 import domain.videogamesshop.service.GameService;
+import domain.videogamesshop.service.PlatformService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -11,7 +13,9 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Controller
 public class GameController {
@@ -21,6 +25,9 @@ public class GameController {
 
     @Autowired
     private FileService fileService;
+
+    @Autowired
+    private PlatformService platformService;
 
     @GetMapping("/")
     public String showGamesList(Model model) {
@@ -46,12 +53,14 @@ public class GameController {
         Game game = gameService.findById(id)
                 .orElseThrow(() -> new RuntimeException("Game not found"));
         model.addAttribute("game", game);
+        model.addAttribute("platforms", platformService.findAll());
         return "edit";
     }
 
     @PostMapping("/games/edit")
     public String updateGame(@Valid @ModelAttribute("game") Game game,
                              BindingResult bindingResult,
+                             @RequestParam(value="platformIds", required = false) List<Long> platformIds,
                              @RequestParam("file") MultipartFile file, // получаем загруженный файл
                              Model model) {
         if (bindingResult.hasErrors()) {
@@ -76,6 +85,16 @@ public class GameController {
             game.setImageUrl(oldGame.getImageUrl());
         }
 
+        Set<Platform> selectedPlatforms = new HashSet<>();
+        if (platformIds != null) {
+            for (Long platformId : platformIds) {
+                Platform p = platformService.findById(platformId)
+                        .orElseThrow(() -> new RuntimeException("Platform not found"));
+                selectedPlatforms.add(p);
+            }
+        }
+        game.setPlatforms(selectedPlatforms);
+
         // Сохраняем обновлённую игру
         gameService.save(game);
 
@@ -87,12 +106,14 @@ public class GameController {
         // Создаём пустой объект Game для привязки формы
         Game newGame = new Game();
         model.addAttribute("game", newGame);
+        model.addAttribute("platforms", platformService.findAll());
         return "new"; // возврат к шаблону new.html
     }
 
     @PostMapping("/games/new")
     public String createGame(@Valid @ModelAttribute("game") Game game,
                              BindingResult bindingResult,
+                             @RequestParam(value="platformIds", required = false) List<Long> platformIds,
                              @RequestParam("file") MultipartFile file) {
         if (bindingResult.hasErrors()) {
             // Если есть ошибки валидации, просто возвращаем ту же форму
@@ -104,6 +125,16 @@ public class GameController {
             String filename = fileService.saveFile(file);
             game.setImageUrl(filename);
         }
+
+        Set<Platform> selectedPlatforms = new HashSet<>();
+        if (platformIds != null) {
+            for (Long platformId : platformIds){
+                Platform p = platformService.findById(platformId)
+                        .orElseThrow(() -> new RuntimeException("Platform not found"));
+                selectedPlatforms.add(p);
+            }
+        }
+        game.setPlatforms(selectedPlatforms);
 
         // Сохраняем в БД
         gameService.save(game);

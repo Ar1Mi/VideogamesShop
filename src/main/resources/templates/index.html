@@ -23,7 +23,7 @@
     <th>Жанр</th>
     <th>Год выпуска</th>
     <th>Вес файла</th>
-    <th>OS</th>
+<!--    <th>OS</th>-->
     <th>Действия</th>
   </tr>
   </thead>
@@ -35,7 +35,9 @@
     <td th:text="${game.genre}">Жанр</td>
     <td th:text="${game.year}">Год</td>
     <td th:text="${game.fileSize}">Вес</td>
-    <td th:text="${game.os}">ОС</td>
+<!--    <td th:text="${game.os}">ОС</td>-->
+
+
     <td>
       <!-- Кнопка/ссылка на страницу с подробной информацией -->
       <a th:href="@{/games/details/{id}(id=${game.id})}">

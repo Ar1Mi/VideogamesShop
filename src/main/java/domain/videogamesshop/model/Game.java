@@ -7,6 +7,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.*;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Entity
 @Table(name = "games")
 @Getter
@@ -37,8 +40,16 @@ public class Game {
     @PositiveOrZero(message = "{game.fileSize.positiveOrZero}")
     private double fileSize;     // Вес файла
 
-    @NotBlank(message = "{game.os.notBlank}")
-    private String os;           // Поддерживаемая ОС
+//    @NotBlank(message = "{game.os.notBlank}")
+//    private String os;           // Поддерживаемая ОС
+
+    @ManyToMany
+    @JoinTable(
+            name = "game_platform",
+            joinColumns = @JoinColumn(name="game_id"),
+            inverseJoinColumns = @JoinColumn(name = "platform_id")
+    )
+    private Set<Platform> platforms = new HashSet<>();
 
     // Поле для ссылки на картинку
     private String imageUrl;
@@ -91,19 +102,19 @@ public class Game {
         this.fileSize = fileSize;
     }
 
-    public String getOs() {
-        return os;
-    }
-
-    public void setOs(String os) {
-        this.os = os;
-    }
-
     public String getImageUrl() {
         return imageUrl;
     }
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public Set<Platform> getPlatforms() {
+        return platforms;
+    }
+
+    public void setPlatforms(Set<Platform> platforms) {
+        this.platforms = platforms;
     }
 }

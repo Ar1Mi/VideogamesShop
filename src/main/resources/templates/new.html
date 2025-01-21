@@ -43,11 +43,16 @@
         <div th:if="${#fields.hasErrors('fileSize')}" th:errors="*{fileSize}"></div>
     </div>
 
-    <!-- ОС -->
+    <!-- Платформа -->
     <div>
-        <label for="os">Операционная система</label>
-        <input type="text" id="os" th:field="*{os}" />
-        <div th:if="${#fields.hasErrors('os')}" th:errors="*{os}"></div>
+        <label>Платформы</label>
+        <div th:each="platform : ${platforms}">
+            <label>
+                <input type="checkbox" name="platformIds"
+                th:value="${platform.id}">
+                <span th:text="${platform.name}"></span>
+            </label>
+        </div>
     </div>
 
     <!-- Загрузка файла -->

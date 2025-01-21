@@ -47,11 +47,21 @@
              th:errors="*{fileSize}">Ошибка для поля Вес файла</div>
     </div>
 
-    <div>
-        <label for="os">Операционная система</label>
-        <input type="text" id="os" th:field="*{os}" />
-        <div th:if="${#fields.hasErrors('os')}"
-             th:errors="*{os}">Ошибка для поля ОС</div>
+<!--    <div>-->
+<!--        <label for="os">Операционная система</label>-->
+<!--        <input type="text" id="os" th:field="*{os}" />-->
+<!--        <div th:if="${#fields.hasErrors('os')}"-->
+<!--             th:errors="*{os}">Ошибка для поля ОС</div>-->
+<!--    </div>-->
+    <p>Платформы:</p>
+    <div th:each="plat : ${platforms}">
+        <label>
+            <input type="checkbox"
+            name="platformIds"
+            th:value="${plat.id}"
+            th:checked="${game.platforms.contains(plat)}">
+            <span th:text="${plat.name}"></span>
+        </label>
     </div>
 
     <div>
