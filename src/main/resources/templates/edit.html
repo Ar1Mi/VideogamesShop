@@ -26,12 +26,17 @@
              th:errors="*{developer}">Ошибка для поля Разработчик</div>
     </div>
 
-    <div>
-        <label for="genre">Жанр</label>
-        <input type="text" id="genre" th:field="*{genre}" />
-        <div th:if="${#fields.hasErrors('genre')}"
-             th:errors="*{genre}">Ошибка для поля Жанр</div>
+    <p>Жанр:</p>
+    <div th:each="genre : ${genres}">
+        <label>
+            <input type="checkbox"
+                   name="genreIds"
+                   th:value="${genre.id}"
+                   th:checked="${game.genres.contains(genre)}">
+            <span th:text="${genre.name}"></span>
+        </label>
     </div>
+
 
     <div>
         <label for="year">Год выпуска</label>

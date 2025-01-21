@@ -20,10 +20,9 @@
     <th>ID</th>
     <th>Название</th>
     <th>Разработчик</th>
-    <th>Жанр</th>
+    <th>Жанры</th>
     <th>Год выпуска</th>
     <th>Вес файла</th>
-<!--    <th>OS</th>-->
     <th>Действия</th>
   </tr>
   </thead>
@@ -32,11 +31,21 @@
     <td th:text="${game.id}">ID</td>
     <td th:text="${game.name}">Название игры</td>
     <td th:text="${game.developer}">Разработчик</td>
-    <td th:text="${game.genre}">Жанр</td>
+
+    <!-- Отображение жанров через запятую или "не указан" -->
+    <td>
+      <!-- Если список жанров не пуст, перечисляем их через запятую -->
+      <span th:if="${!#lists.isEmpty(game.genres)}"
+            th:each="genre, iterStat : ${game.genres}"
+            th:text="${genre.name} + (!iterStat.last ? '' : ';')">
+    </span>
+      <!-- Если список жанров пуст, пишем "не указан" -->
+      <span th:if="${#lists.isEmpty(game.genres)}">не указан</span>
+    </td>
+
+
     <td th:text="${game.year}">Год</td>
     <td th:text="${game.fileSize}">Вес</td>
-<!--    <td th:text="${game.os}">ОС</td>-->
-
 
     <td>
       <!-- Кнопка/ссылка на страницу с подробной информацией -->
@@ -50,12 +59,10 @@
       </a>
 
       <!-- Кнопка/ссылка на удаление; onclick - подтверждение -->
-    <td>
       <a th:href="@{/games/delete/{id}(id=${game.id})}"
          onclick="return confirm('Точно удалить игру: [[${game.name}]]?');">
         <button>Удалить</button>
       </a>
-    </td>
     </td>
   </tr>
   </tbody>

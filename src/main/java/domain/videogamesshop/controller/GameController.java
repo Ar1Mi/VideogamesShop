@@ -1,9 +1,11 @@
 package domain.videogamesshop.controller;
 
 import domain.videogamesshop.model.Game;
+import domain.videogamesshop.model.Genre;
 import domain.videogamesshop.model.Platform;
 import domain.videogamesshop.service.FileService;
 import domain.videogamesshop.service.GameService;
+import domain.videogamesshop.service.GenreService;
 import domain.videogamesshop.service.PlatformService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,30 +31,30 @@ public class GameController {
     @Autowired
     private PlatformService platformService;
 
+    @Autowired
+    private GenreService genreService;
+
     @GetMapping("/")
     public String showGamesList(Model model) {
         List<Game> games = gameService.findAllGames();
         model.addAttribute("games", games);
-        return "index";  // возвращаем имя шаблона (index.html)
+        return "index";
     }
 
     @GetMapping("/games/details/{id}")
     public String showGameDetails(@PathVariable Long id, Model model) {
-        // Получаем игру по ID (можно использовать метод findById из JPA)
         Game game = gameService.findById(id)
                 .orElseThrow(() -> new RuntimeException("Game not found"));
-        // Передаём объект game в модель
         model.addAttribute("game", game);
-        // Возвращаем имя Thymeleaf-шаблона, например "details"
         return "details";
     }
 
-    //Отобразить форму редактирования
     @GetMapping("/games/edit/{id}")
     public String showEditForm(@PathVariable Long id, Model model) {
         Game game = gameService.findById(id)
                 .orElseThrow(() -> new RuntimeException("Game not found"));
         model.addAttribute("game", game);
+        model.addAttribute("genres", genreService.findAllGenres());
         model.addAttribute("platforms", platformService.findAll());
         return "edit";
     }
@@ -60,6 +62,7 @@ public class GameController {
     @PostMapping("/games/edit")
     public String updateGame(@Valid @ModelAttribute("game") Game game,
                              BindingResult bindingResult,
+                             @RequestParam(value="genreIds", required = false) List<Long> genreIds,
                              @RequestParam(value="platformIds", required = false) List<Long> platformIds,
                              @RequestParam("file") MultipartFile file, // получаем загруженный файл
                              Model model) {
@@ -67,23 +70,30 @@ public class GameController {
             return "edit";
         }
 
-        // Находим старый объект (чтобы узнать старый файл, если было изображение)
         Game oldGame = gameService.findById(game.getId())
                 .orElseThrow(() -> new RuntimeException("Game not found"));
 
-        // Если пользователь загрузил новый файл, удаляем старый и сохраняем новый
         if (file != null && !file.isEmpty()) {
-            // Удаляем старый файл (если был)
             if (oldGame.getImageUrl() != null && !oldGame.getImageUrl().isBlank()) {
                 fileService.deleteFile(oldGame.getImageUrl());
             }
             // Сохраняем новый
             String newFilename = fileService.saveFile(file);
-            game.setImageUrl(newFilename); // в БД мы храним имя файла, например "uuid_originalName.jpg"
+            game.setImageUrl(newFilename);
         } else {
             // Если новый файл не загружен, оставляем старый путь к картинке
             game.setImageUrl(oldGame.getImageUrl());
         }
+
+        Set<Genre> selectedGenres = new HashSet<>();
+        if(genreIds != null) {
+            for (Long genreId : genreIds) {
+                Genre genre = genreService.findGenreById(genreId)
+                        .orElseThrow(() -> new RuntimeException("Genre not found"));
+                selectedGenres.add(genre);
+            }
+        }
+        game.setGenres(selectedGenres);
 
         Set<Platform> selectedPlatforms = new HashSet<>();
         if (platformIds != null) {
@@ -95,7 +105,6 @@ public class GameController {
         }
         game.setPlatforms(selectedPlatforms);
 
-        // Сохраняем обновлённую игру
         gameService.save(game);
 
         return "redirect:/";
@@ -106,6 +115,7 @@ public class GameController {
         // Создаём пустой объект Game для привязки формы
         Game newGame = new Game();
         model.addAttribute("game", newGame);
+        model.addAttribute("genres", genreService.findAllGenres());
         model.addAttribute("platforms", platformService.findAll());
         return "new"; // возврат к шаблону new.html
     }
@@ -113,10 +123,11 @@ public class GameController {
     @PostMapping("/games/new")
     public String createGame(@Valid @ModelAttribute("game") Game game,
                              BindingResult bindingResult,
+                             @RequestParam(value="genreIds", required = false) List<Long> genreIds,
                              @RequestParam(value="platformIds", required = false) List<Long> platformIds,
                              @RequestParam("file") MultipartFile file) {
         if (bindingResult.hasErrors()) {
-            // Если есть ошибки валидации, просто возвращаем ту же форму
+            // Если есть ошибки валидации, возвращаем ту же форму
             return "new";
         }
 
@@ -125,6 +136,16 @@ public class GameController {
             String filename = fileService.saveFile(file);
             game.setImageUrl(filename);
         }
+
+        Set<Genre> selectedGenres = new HashSet<>();
+        if(genreIds != null) {
+            for (Long genreId : genreIds) {
+                Genre genre = genreService.findGenreById(genreId)
+                        .orElseThrow(() -> new RuntimeException("Genre not found"));
+                selectedGenres.add(genre);
+            }
+        }
+        game.setGenres(selectedGenres);
 
         Set<Platform> selectedPlatforms = new HashSet<>();
         if (platformIds != null) {

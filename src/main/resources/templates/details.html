@@ -9,15 +9,20 @@
 
 <div>
     <!-- Если вы храните путь к картинке в game.imageUrl -->
-    <img th:src="@{'/uploads/' + ${game.imageUrl}}" alt="Game Image" style="max-width: 300px;" />
+    <img th:src="@{'/uploads/' + ${game.imageUrl}}" alt="Game Image" style="max-width: 300px;"/>
 </div>
 
 <p><strong>Разработчик:</strong> <span th:text="${game.developer}">Developer</span></p>
-<p><strong>Жанр:</strong> <span th:text="${game.genre}">Genre</span></p>
+<p><strong>Жанр:</strong>
+    <span th:if="${!#lists.isEmpty(game.genres)}"
+          th:each="genre, iterStat : ${game.genres}"
+          th:text="${genre.name} + (!iterStat.last ? '' : ';')">
+    </span>
+    <span th:if="${#lists.isEmpty(game.genres)}">не указан</span>
 <p><strong>Год выпуска:</strong> <span th:text="${game.year}">Year</span></p>
 <p><strong>Вес файла (МБ):</strong> <span th:text="${game.fileSize}">Size</span></p>
 <p><strong>Поддерживаемые платформы:</strong>
-    <div th:each="platform : ${game.getPlatforms()}">
+<div th:each="platform : ${game.getPlatforms()}">
     <label th:text="${platform.getName()}"></label>
 </div>
 </p>

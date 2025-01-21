@@ -30,8 +30,8 @@ public class Game {
     @NotBlank(message = "{game.developer.notBlank}")
     private String developer;    // Разработчик
 
-    @NotBlank(message = "{game.genre.notBlank}")
-    private String genre;        // Жанр
+//    @NotBlank(message = "{game.genre.notBlank}")
+//    private String genre;        // Жанр
 
     @Min(value = 1970, message = "{game.year.min}")
     @Max(value = 2050, message = "{game.year.max}")
@@ -40,9 +40,6 @@ public class Game {
     @PositiveOrZero(message = "{game.fileSize.positiveOrZero}")
     private double fileSize;     // Вес файла
 
-//    @NotBlank(message = "{game.os.notBlank}")
-//    private String os;           // Поддерживаемая ОС
-
     @ManyToMany
     @JoinTable(
             name = "game_platform",
@@ -50,6 +47,14 @@ public class Game {
             inverseJoinColumns = @JoinColumn(name = "platform_id")
     )
     private Set<Platform> platforms = new HashSet<>();
+
+    @ManyToMany
+    @JoinTable(
+            name = "game_genre",
+            joinColumns = @JoinColumn(name="game_id"),
+            inverseJoinColumns = @JoinColumn(name="genre_id")
+    )
+    private Set<Genre> genres = new HashSet<>();
 
     // Поле для ссылки на картинку
     private String imageUrl;
@@ -76,14 +81,6 @@ public class Game {
 
     public void setDeveloper(String developer) {
         this.developer = developer;
-    }
-
-    public String getGenre() {
-        return genre;
-    }
-
-    public void setGenre(String genre) {
-        this.genre = genre;
     }
 
     public int getYear() {
@@ -116,5 +113,13 @@ public class Game {
 
     public void setPlatforms(Set<Platform> platforms) {
         this.platforms = platforms;
+    }
+
+    public Set<Genre> getGenres() {
+        return genres;
+    }
+
+    public void setGenres(Set<Genre> genres) {
+        this.genres = genres;
     }
 }
