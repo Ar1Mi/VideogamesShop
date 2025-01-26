@@ -34,7 +34,7 @@ public class GameController {
     @Autowired
     private GenreService genreService;
 
-    @GetMapping("/")
+    @GetMapping("/games")
     public String showGamesList(Model model) {
         List<Game> games = gameService.findAllGames();
         model.addAttribute("games", games);

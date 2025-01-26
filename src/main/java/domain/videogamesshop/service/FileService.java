@@ -1,6 +1,5 @@
 package domain.videogamesshop.service;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -9,7 +8,6 @@ import java.nio.file.*;
 import java.util.UUID;
 
 @Service
-@Slf4j
 public class FileService {
 
     // Путь к папке, куда складываем загруженные файлы.

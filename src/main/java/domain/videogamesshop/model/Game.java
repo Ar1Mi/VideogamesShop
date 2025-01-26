@@ -7,7 +7,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -55,8 +57,9 @@ public class Game {
             inverseJoinColumns = @JoinColumn(name="genre_id")
     )
     private Set<Genre> genres = new HashSet<>();
+    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Review> reviews = new ArrayList<>();
 
-    // Поле для ссылки на картинку
     private String imageUrl;
 
     public Long getId() {
@@ -121,5 +124,13 @@ public class Game {
 
     public void setGenres(Set<Genre> genres) {
         this.genres = genres;
+    }
+
+    public List<Review> getReviews() {
+        return reviews;
+    }
+
+    public void setReviews(List<Review> reviews) {
+        this.reviews = reviews;
     }
 }
