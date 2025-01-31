@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <title th:text="#{addCard.title}">Добавить новую карту</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<div class="container mt-5">
+  <h2 class="text-center mb-4" th:text="#{addCard.heading}">Добавить банковскую карту</h2>
+
+  <form th:action="@{/bankcard/new}" th:object="${bankCard}" method="post" class="bg-white p-4 rounded shadow-sm">
+    <div class="mb-3">
+      <label for="cardNumber" class="form-label" th:text="#{addCard.cardNumber}">Номер карты (16 цифр):</label>
+      <input type="text" id="cardNumber" th:field="*{cardNumber}" class="form-control" th:placeholder="#{addCard.cardNumber.placeholder}" />
+      <div th:if="${#fields.hasErrors('cardNumber')}" class="text-danger small mt-1" th:errors="*{cardNumber}"></div>
+    </div>
+    <div class="mb-3">
+      <label for="cvv" class="form-label" th:text="#{addCard.cvv}">CVV (3 цифры):</label>
+      <input type="text" id="cvv" th:field="*{cvv}" class="form-control" th:placeholder="#{addCard.cvv.placeholder}" />
+      <div th:if="${#fields.hasErrors('cvv')}" class="text-danger small mt-1" th:errors="*{cvv}"></div>
+    </div>
+    <button type="submit" class="btn btn-primary w-100" th:text="#{addCard.save}">Сохранить</button>
+  </form>
+
+  <div class="mt-4 text-center">
+    <a th:href="@{/cart}" class="btn btn-link" th:text="#{addCard.backToCart}">Вернуться в корзину</a>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

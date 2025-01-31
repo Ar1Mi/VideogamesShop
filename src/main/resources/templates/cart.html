@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <title th:text="#{cart.title}">Моя корзина</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<div class="container mt-5">
+  <h2 class="text-center mb-4" th:text="#{cart.heading}">Корзина</h2>
+
+  <div sec:authorize="isAuthenticated()" class="mb-4">
+    <p th:text="#{cart.user}" class="fw-bold">Пользователь: <span sec:authentication="name"></span></p>
+  </div>
+
+  <div th:if="${cart != null}">
+    <p class="mb-2" th:text="#{cart.totalGames} + ': ' + ${cart.games.size()}"></p>
+    <p class="mb-4" th:text="#{cart.totalPrice} + ': ' + ${cart.totalPrice} + ' руб.'"></p>
+
+    <table class="table table-bordered table-striped">
+      <thead class="table-dark">
+      <tr>
+        <th th:text="#{cart.gameId}">ID</th>
+        <th th:text="#{cart.gameName}">Название</th>
+        <th th:text="#{cart.gamePrice}">Цена</th>
+        <th th:text="#{cart.actions}">Действия</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="g : ${cart.games}">
+        <td th:text="${g.id}"></td>
+        <td th:text="${g.name}"></td>
+        <td th:text="${g.price}"></td>
+        <td>
+          <a th:href="@{/cart/removeGame/{gameId}(gameId=${g.id})}" class="btn btn-danger btn-sm" th:text="#{cart.remove}">Убрать</a>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 class="mt-5 mb-3" th:text="#{cart.cards}">Мои банковские карты</h3>
+
+  <form th:action="@{/cart/checkout}" method="post" class="mb-4">
+    <div th:each="card : ${cards}" class="mb-3">
+      <div class="form-check">
+        <input type="radio" name="cardId" th:value="${card.id}" class="form-check-input" required />
+        <label class="form-check-label">
+          <span th:text="#{cart.cardNumber}">Номер карты:</span> <span th:text="${card.cardNumber}"></span>
+          (<span th:text="#{cart.balance} + ': ' + ${card.balance}"></span>)
+        </label>
+        <a th:href="@{/bankcard/delete/{id}(id=${card.id})}" class="btn btn-danger btn-sm ms-3" th:text="#{cart.deleteCard}">Удалить</a>
+      </div>
+    </div>
+
+    <!-- Показывать кнопку "Оформить заказ", если карты существуют -->
+    <button type="submit" class="btn btn-primary w-100" th:if="${!#lists.isEmpty(cards)}" th:text="#{cart.checkout}">Оформить заказ</button>
+  </form>
+
+    <div th:if="${error != null}" class="text-danger mb-3">
+      <p th:text="${error}"></p>
+    </div>
+
+  <!-- Если нет карт, выводить сообщение -->
+  <div th:if="${#lists.isEmpty(cards)}" class="alert alert-warning text-center" role="alert">
+    <p th:text="#{cart.noCardsMessage}">У вас нет добавленных карт. Добавьте карту, чтобы оформить заказ.</p>
+  </div>
+
+  <div class="d-flex justify-content-between">
+    <a th:href="@{/bankcard/new}" class="btn btn-success" th:text="#{cart.addCard}">Добавить карту</a>
+    <a th:href="@{/games}" class="btn btn-secondary" th:text="#{cart.backToList}">Вернуться к списку</a>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

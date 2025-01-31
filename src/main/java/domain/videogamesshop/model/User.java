@@ -1,6 +1,9 @@
 package domain.videogamesshop.model;
 
+import com.itextpdf.text.Phrase;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,6 +27,10 @@ public class User {
     private String password;
     @ManyToOne
     private Role role;
+    @Column(nullable = false)
+    @NotBlank(message = "Email cant be empty")
+    @Email(message = "Некорректный формат email")
+    private String email;
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Review> reviews = new ArrayList<>();
 
@@ -76,5 +83,25 @@ public class User {
 
     public void setReviews(List<Review> reviews) {
         this.reviews = reviews;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", login='" + login + '\'' +
+                ", password='" + password + '\'' +
+                ", role=" + role +
+                ", email='" + email + '\'' +
+                ", reviews=" + reviews +
+                '}';
     }
 }

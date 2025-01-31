@@ -1,34 +1,87 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-    <title>Детали игры</title>
-    <meta charset="UTF-8"/>
+    <title th:text="#{gameDetails.title}">Детали игры</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body>
-<h1 th:text="'Детали игры: ' + ${game.name}">Детали игры</h1>
+<body class="bg-light">
+<div class="container mt-5">
+    <h1 class="mb-4" th:text="#{gameDetails.heading} + ' ' + ${game.name}">Детали игры: </h1>
 
-<div>
-    <!-- Если вы храните путь к картинке в game.imageUrl -->
-    <img th:src="@{'/uploads/' + ${game.imageUrl}}" alt="Game Image" style="max-width: 300px;"/>
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <img th:src="@{'/uploads/' + ${game.imageUrl}}" alt="Game Image" class="img-fluid rounded shadow-sm" style="max-width: 300px;" />
+        </div>
+        <div class="col-md-8">
+            <p><strong th:text="#{gameDetails.developer}">Разработчик:</strong> <span th:text="${game.developer}">Developer</span></p>
+
+            <p><strong th:text="#{gameDetails.genres}">Жанр:</strong>
+                <span th:if="${!#lists.isEmpty(game.genres)}"
+                      th:each="genre, iterStat : ${game.genres}"
+                      th:text="${genre.name} + (!iterStat.last ? ', ' : '')">
+                </span>
+                <span th:if="${#lists.isEmpty(game.genres)}" th:text="#{gameDetails.noGenre}">не указан</span>
+            </p>
+
+            <p><strong th:text="#{gameDetails.year}">Год выпуска:</strong> <span th:text="${game.year}">Year</span></p>
+            <p><strong th:text="#{gameDetails.fileSize}">Вес файла (МБ):</strong> <span th:text="${game.fileSize}">Size</span></p>
+            <p><strong th:text="#{gameDetails.price}">Цена:</strong> <span th:text="${game.price}">Price</span></p>
+
+            <p><strong th:text="#{gameDetails.platforms}">Поддерживаемые платформы:</strong></p>
+            <ul class="list-group">
+                <li class="list-group-item" th:each="platform : ${game.platforms}" th:text="${platform.name}"></li>
+            </ul>
+        </div>
+    </div>
+
+    <a th:href="@{/games}" class="btn btn-secondary mb-4" th:text="#{gameDetails.backToList}">Вернуться к списку</a>
+
+    <hr />
+
+    <div sec:authorize="isAuthenticated()">
+        <h3 class="mb-3" th:text="#{gameDetails.leaveReview}">Оставить отзыв</h3>
+
+        <form th:action="@{/reviews/add}" th:object="${review}" method="post" class="bg-white p-4 rounded shadow-sm">
+            <input type="hidden" th:field="*{game.id}" th:value="${game.id}" />
+
+            <div class="mb-3">
+                <label for="title" class="form-label" th:text="#{gameDetails.reviewTitle}">Заголовок</label>
+                <input type="text" id="title" th:field="*{title}" class="form-control" required />
+            </div>
+
+            <div class="mb-3">
+                <label for="content" class="form-label" th:text="#{gameDetails.reviewContent}">Текст</label>
+                <textarea id="content" th:field="*{content}" class="form-control" rows="4" required></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label for="rating" class="form-label" th:text="#{gameDetails.reviewRating}">Оценка (0-5)</label>
+                <input type="number" id="rating" min="0" max="5" th:field="*{rating}" class="form-control" required />
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100" th:text="#{gameDetails.submitReview}">Оставить отзыв</button>
+        </form>
+    </div>
+
+    <hr />
+
+    <h3 class="mb-3" th:text="#{gameDetails.reviews}">Отзывы</h3>
+    <div th:if="${#lists.isEmpty(reviews)}" class="alert alert-info">
+        <p th:text="#{gameDetails.noReviews}">Отзывов пока нет</p>
+    </div>
+    <ul class="list-group" th:if="${!#lists.isEmpty(reviews)}" th:each="review : ${reviews}">
+        <li class="list-group-item">
+            <h5 class="mb-1" th:text="${review.title}">Заголовок</h5>
+            <p class="mb-1" th:text="${review.content}">Текст отзыва</p>
+            <small class="text-muted" th:text="#{gameDetails.reviewMeta} + ${review.rating} + '/5 | ' + ${review.user.login}">
+                Оценка: 5/5 | Автор: User
+            </small>
+        </li>
+    </ul>
 </div>
-
-<p><strong>Разработчик:</strong> <span th:text="${game.developer}">Developer</span></p>
-<p><strong>Жанр:</strong>
-    <span th:if="${!#lists.isEmpty(game.genres)}"
-          th:each="genre, iterStat : ${game.genres}"
-          th:text="${genre.name} + (!iterStat.last ? '' : ';')">
-    </span>
-    <span th:if="${#lists.isEmpty(game.genres)}">не указан</span>
-<p><strong>Год выпуска:</strong> <span th:text="${game.year}">Year</span></p>
-<p><strong>Вес файла (МБ):</strong> <span th:text="${game.fileSize}">Size</span></p>
-<p><strong>Поддерживаемые платформы:</strong>
-<div th:each="platform : ${game.getPlatforms()}">
-    <label th:text="${platform.getName()}"></label>
-</div>
-</p>
-
-<br>
-<!-- Кнопка назад на список всех игр -->
-<a th:href="@{/}">Вернуться к списку</a>
+<br><br>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

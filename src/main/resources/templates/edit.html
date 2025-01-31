@@ -1,86 +1,77 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Редактирование игры</title>
-    <meta charset="UTF-8"/>
+    <title th:text="#{editGame.title}">Редактирование игры</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body>
-<h1>Редактирование игры</h1>
+<body class="bg-light">
+<div class="container mt-5">
+    <h1 class="text-center mb-4" th:text="#{editGame.heading}">Редактирование игры</h1>
 
-<form th:action="@{/games/edit}" th:object="${game}" method="post" enctype="multipart/form-data">
-    <!-- Поле ID (скрыто, чтобы передавать в модель) -->
-    <input type="hidden" th:field="*{id}"/>
+    <form th:action="@{/games/edit}" th:object="${game}" method="post" enctype="multipart/form-data" class="bg-white p-4 rounded shadow-sm">
+        <!-- Поле ID (скрыто, чтобы передавать в модель) -->
+        <input type="hidden" th:field="*{id}" />
 
-    <div>
-        <label for="name">Название</label>
-        <input type="text" id="name" th:field="*{name}" />
-        <!-- Выводим ошибку, если есть -->
-        <div th:if="${#fields.hasErrors('name')}"
-             th:errors="*{name}">Ошибка для поля Название</div>
-    </div>
+        <div class="mb-3">
+            <label for="name" class="form-label" th:text="#{editGame.name}">Название</label>
+            <input type="text" id="name" th:field="*{name}" class="form-control" th:placeholder="#{editGame.name.placeholder}" />
+            <div th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="text-danger small mt-1"></div>
+        </div>
 
-    <div>
-        <label for="developer">Разработчик</label>
-        <input type="text" id="developer" th:field="*{developer}" />
-        <div th:if="${#fields.hasErrors('developer')}"
-             th:errors="*{developer}">Ошибка для поля Разработчик</div>
-    </div>
+        <div class="mb-3">
+            <label for="developer" class="form-label" th:text="#{editGame.developer}">Разработчик</label>
+            <input type="text" id="developer" th:field="*{developer}" class="form-control" th:placeholder="#{editGame.developer.placeholder}" />
+            <div th:if="${#fields.hasErrors('developer')}" th:errors="*{developer}" class="text-danger small mt-1"></div>
+        </div>
 
-    <p>Жанр:</p>
-    <div th:each="genre : ${genres}">
-        <label>
-            <input type="checkbox"
-                   name="genreIds"
-                   th:value="${genre.id}"
-                   th:checked="${game.genres.contains(genre)}">
-            <span th:text="${genre.name}"></span>
-        </label>
-    </div>
+        <p class="form-label" th:text="#{editGame.genres}">Жанр:</p>
+        <div class="mb-3">
+            <div th:each="genre : ${genres}" class="form-check">
+                <input type="checkbox" name="genreIds" th:value="${genre.id}" th:checked="${game.genres.contains(genre)}" class="form-check-input" />
+                <label class="form-check-label" th:text="${genre.name}"></label>
+            </div>
+        </div>
 
+        <div class="mb-3">
+            <label for="year" class="form-label" th:text="#{editGame.year}">Год выпуска</label>
+            <input type="number" id="year" th:field="*{year}" class="form-control" th:placeholder="#{editGame.year.placeholder}" />
+            <div th:if="${#fields.hasErrors('year')}" th:errors="*{year}" class="text-danger small mt-1"></div>
+        </div>
 
-    <div>
-        <label for="year">Год выпуска</label>
-        <input type="number" id="year" th:field="*{year}" />
-        <div th:if="${#fields.hasErrors('year')}"
-             th:errors="*{year}">Ошибка для поля Год</div>
-    </div>
+        <div class="mb-3">
+            <label for="fileSize" class="form-label" th:text="#{editGame.fileSize}">Размер файла (МБ)</label>
+            <input type="number" step="0.1" id="fileSize" th:field="*{fileSize}" class="form-control" th:placeholder="#{editGame.fileSize.placeholder}" />
+            <div th:if="${#fields.hasErrors('fileSize')}" th:errors="*{fileSize}" class="text-danger small mt-1"></div>
+        </div>
 
-    <div>
-        <label for="fileSize">Размер файла (МБ)</label>
-        <input type="number" step="0.1" id="fileSize" th:field="*{fileSize}" />
-        <div th:if="${#fields.hasErrors('fileSize')}"
-             th:errors="*{fileSize}">Ошибка для поля Вес файла</div>
-    </div>
+        <div class="mb-3">
+            <label for="price" class="form-label" th:text="#{editGame.price}">Цена</label>
+            <input type="number" step="0.1" id="price" th:field="*{price}" class="form-control" th:placeholder="#{editGame.price.placeholder}" />
+            <div th:if="${#fields.hasErrors('price')}" th:errors="*{price}" class="text-danger small mt-1"></div>
+        </div>
 
-<!--    <div>-->
-<!--        <label for="os">Операционная система</label>-->
-<!--        <input type="text" id="os" th:field="*{os}" />-->
-<!--        <div th:if="${#fields.hasErrors('os')}"-->
-<!--             th:errors="*{os}">Ошибка для поля ОС</div>-->
-<!--    </div>-->
-    <p>Платформы:</p>
-    <div th:each="plat : ${platforms}">
-        <label>
-            <input type="checkbox"
-            name="platformIds"
-            th:value="${plat.id}"
-            th:checked="${game.platforms.contains(plat)}">
-            <span th:text="${plat.name}"></span>
-        </label>
-    </div>
+        <p class="form-label" th:text="#{editGame.platforms}">Платформы:</p>
+        <div class="mb-3">
+            <div th:each="plat : ${platforms}" class="form-check">
+                <input type="checkbox" name="platformIds" th:value="${plat.id}" th:checked="${game.platforms.contains(plat)}" class="form-check-input" />
+                <label class="form-check-label" th:text="${plat.name}"></label>
+            </div>
+        </div>
 
-    <div>
-        <label for="file">Новое изображение</label>
-        <input type="file" name="file" id="file" />
-        <!-- Если не загружать новый файл, останется старое -->
-    </div>
-    <br/>
-    <button type="submit">Сохранить</button>
-</form>
+        <div class="mb-3">
+            <label for="file" class="form-label" th:text="#{editGame.image}">Новое изображение</label>
+            <input type="file" name="file" id="file" class="form-control" />
+        </div>
 
-<br/>
-<!-- Кнопка вернуться на главную -->
-<a th:href="@{/}">Вернуться к списку</a>
+        <div class="d-flex justify-content-between">
+            <button type="submit" class="btn btn-primary" th:text="#{editGame.save}">Сохранить</button>
+            <a th:href="@{/games}" class="btn btn-secondary" th:text="#{editGame.backToList}">Вернуться к списку</a>
+        </div>
+    </form>
+</div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

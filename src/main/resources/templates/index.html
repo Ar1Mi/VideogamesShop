@@ -1,80 +1,137 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-  <title>Videogames shop</title>
-  <meta charset="UTF-8"/>
+  <title th:text="#{games.title}">Videogames shop</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body>
-<h1>Список видеоигр</h1>
+<!--<header>-->
+<!--  <img th:src="@{'/uploads/logo.svg'}" alt="Логотип" style="width: 150px; height: auto;">-->
+<!--</header>-->
+<body class="bg-light">
+<div class="text-center mt-3">
+  <a href="?lang=en">English</a> |
+  <a href="?lang=ru">Русский</a> |
+  <a href="?lang=pl">Polski</a>
+</div>
+<div class="container mt-4">
+  <h1 class="text-center mb-4" th:text="#{games.title}">Список видеоигр</h1>
 
-<!-- Кнопка для перехода на форму добавления новой игры -->
-<a th:href="@{/games/new}">
-  <button>Добавить игру</button>
-</a>
-
-<!-- Форма Logout (появляется только для аутентифицированных пользователей) -->
-<div sec:authorize="isAuthenticated()">
-  <form th:action="@{/logout}" method="post">
-    <!-- CSRF-токен -->
-    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-    <button type="submit">Выйти</button>
+  <form method="get" th:action="@{/games}" class="d-flex mb-4">
+    <input type="text" name="keyword" class="form-control me-2" th:placeholder="#{games.search.placeholder}" th:value="${keyword}" />
+    <button type="submit" class="btn btn-primary" th:text="#{games.search.button}">Искать</button>
   </form>
+
+
+
+  <div class="mb-4 d-flex justify-content-end">
+    <div sec:authorize="hasRole('admin')" class="me-2">
+      <a th:href="@{/admin/transactions/report}" class="btn btn-success" th:text="#{pdf.generate}">
+        Скачать отчёт о транзакциях (PDF)
+      </a>
+    </div>
+    <div sec:authorize="hasRole('admin')" class="me-2">
+      <a th:href="@{/games/new}" class="btn btn-success" th:text="#{games.addGame}">Добавить игру</a>
+    </div>
+    <div sec:authorize="isAuthenticated()" class="me-2">
+      <form th:action="@{/cart}" method="get">
+        <button type="submit" class="btn btn-secondary" th:text="#{games.myCart}">Моя корзина</button>
+      </form>
+    </div>
+    <div sec:authorize="!isAuthenticated()" class="me-2">
+      <form th:action="@{/login}" method="get">
+        <button type="submit" class="btn btn-secondary" th:text="#{games.myCart}">Моя корзина</button>
+      </form>
+    </div>
+    <div sec:authorize="isAuthenticated()">
+      <form th:action="@{/logout}" method="post">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+        <button type="submit" class="btn btn-danger" th:text="#{games.logout}">Выйти</button>
+      </form>
+    </div>
+  </div>
+
+  <table class="table table-bordered table-striped">
+    <thead class="table-dark">
+    <tr>
+      <th th:text="#{games.id}">ID</th>
+      <th th:text="#{games.name}">Название</th>
+      <th th:text="#{games.developer}">Разработчик</th>
+      <th th:text="#{games.genres}">Жанры</th>
+      <th>
+        <span th:text="#{games.year}">Год выпуска</span>
+        <a th:href="@{/games(
+                  keyword=${keyword},
+                  sort='year',
+                  direction=${direction == 'asc' ? 'desc' : 'asc'}
+            )}" class="text-light">
+          <span th:text="${direction == 'asc' ? '↑' : '↓'}"></span>
+        </a>
+      </th>
+      <th th:text="#{games.price}">Цена</th>
+      <th th:text="#{games.actions}">Действия</th>
+      <th th:text="#{games.toCart}">В корзину</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="game : ${games}">
+      <td th:text="${game.id}">ID</td>
+      <td th:text="${game.name}">Название игры</td>
+      <td th:text="${game.developer}">Разработчик</td>
+      <td>
+        <span th:if="${!#lists.isEmpty(game.genres)}"
+              th:each="genre, iterStat : ${game.genres}"
+              th:text="${genre.name} + (!iterStat.last ? ', ' : '')">
+        </span>
+        <span th:if="${#lists.isEmpty(game.genres)}" th:text="#{games.noGenre}">не указан</span>
+      </td>
+      <td th:text="${game.year}">Год</td>
+      <td th:text="${game.price}">Цена</td>
+      <td>
+        <a th:href="@{/games/details/{id}(id=${game.id})}" class="btn btn-info btn-sm" th:text="#{games.details}">Детали</a>
+          <div sec:authorize="hasRole('admin')" class="mt-2">
+          <a th:href="@{/games/edit/{id}(id=${game.id})}" class="btn btn-warning btn-sm" th:text="#{games.edit}">Редактировать</a>
+          <a th:href="@{/games/delete/{id}(id=${game.id})}" onclick="return confirm('are u sure???');" class="btn btn-danger btn-sm mt-1" th:text="#{games.delete}">Удалить</a>
+          </div>
+      </td>
+      <td>
+        <div sec:authorize="!isAuthenticated()">
+          <a th:href="@{/login}" class="btn btn-secondary btn-sm" th:text="#{games.toCartLogin}">В корзину (Войти)</a>
+        </div>
+        <div sec:authorize="isAuthenticated()">
+          <form th:id="${'cartForm-' + game.id}"
+                method="post"
+                th:attr="data-add-url=@{/cart/addGame/{gameId}(gameId=${game.id})},
+                         data-remove-url=@{/cart/removeGame/{gameId}(gameId=${game.id})}">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            <input type="checkbox"
+                   th:checked="${cartGameIds.contains(game.id)}"
+                   onchange="toggleCart(this.form.id, false)" />
+          </form>
+        </div>
+      </td>
+    </tr>
+    </tbody>
+  </table>
 </div>
 
-<br/><br/>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  function toggleCart(formId, gameInCart) {
+    const form = document.getElementById(formId);
+    const checkbox = form.querySelector("input[type='checkbox']");
 
-<table border="1">
-  <thead>
-  <tr>
-    <th>ID</th>
-    <th>Название</th>
-    <th>Разработчик</th>
-    <th>Жанры</th>
-    <th>Год выпуска</th>
-    <th>Вес файла</th>
-    <th>Действия</th>
-  </tr>
-  </thead>
-  <tbody>
-  <tr th:each="game : ${games}">
-    <td th:text="${game.id}">ID</td>
-    <td th:text="${game.name}">Название игры</td>
-    <td th:text="${game.developer}">Разработчик</td>
+    const isChecked = checkbox.checked;
 
-    <!-- Отображение жанров через запятую или "не указан" -->
-    <td>
-      <!-- Если список жанров не пуст, перечисляем их через запятую -->
-      <span th:if="${!#lists.isEmpty(game.genres)}"
-            th:each="genre, iterStat : ${game.genres}"
-            th:text="${genre.name} + (!iterStat.last ? '' : '; ')">
-    </span>
-      <!-- Если список жанров пуст, пишем "не указан" -->
-      <span th:if="${#lists.isEmpty(game.genres)}">не указан</span>
-    </td>
+    if (isChecked) {
+      form.action = form.getAttribute("data-add-url");
+    } else {
+      form.action = form.getAttribute("data-remove-url");
+    }
 
-
-    <td th:text="${game.year}">Год</td>
-    <td th:text="${game.fileSize}">Вес</td>
-
-    <td>
-      <!-- Кнопка/ссылка на страницу с подробной информацией -->
-      <a th:href="@{/games/details/{id}(id=${game.id})}">
-        <button>Детали</button>
-      </a>
-
-      <!-- Кнопка/ссылка на форму редактирования -->
-      <a th:href="@{/games/edit/{id}(id=${game.id})}">
-        <button>Редактировать</button>
-      </a>
-
-      <!-- Кнопка/ссылка на удаление; onclick - подтверждение -->
-      <a th:href="@{/games/delete/{id}(id=${game.id})}"
-         onclick="return confirm('Точно удалить игру: [[${game.name}]]?');">
-        <button>Удалить</button>
-      </a>
-    </td>
-  </tr>
-  </tbody>
-</table>
+    form.submit();
+  }
+</script>
 </body>
 </html>

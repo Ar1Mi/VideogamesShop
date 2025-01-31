@@ -26,26 +26,32 @@ public class Game {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "{game.name.notBlank}")
-    private String name;         // Название
+    //    @NotBlank(message = "{game.name.notBlank}")
+    @NotBlank(message = "game name cant be unnamed")
+    private String name;
 
-    @NotBlank(message = "{game.developer.notBlank}")
-    private String developer;    // Разработчик
+    //    @NotBlank(message = "{game.developer.notBlank}")
+    @NotBlank(message = "developer cant be empty")
+    private String developer;
 
-//    @NotBlank(message = "{game.genre.notBlank}")
-//    private String genre;        // Жанр
 
-    @Min(value = 1970, message = "{game.year.min}")
-    @Max(value = 2050, message = "{game.year.max}")
-    private int year;            // Год выпуска
+    //@Min(value = 1970, message = "game.year.min")
+    //@Max(value = 2050, message = "game.year.max")
+    @Min(value = 1970, message = "year cant be lover 1970")
+    @Max(value = 2050, message = "year cant be bigger 2050")
+    private int year;
 
-    @PositiveOrZero(message = "{game.fileSize.positiveOrZero}")
-    private double fileSize;     // Вес файла
+    //    @PositiveOrZero(message = "game.fileSize.positiveOrZero")
+    @PositiveOrZero(message = "file size cant be zero")
+    private double fileSize;
+
+    @Min(value = 0, message = "price cant be negative")
+    private double price;
 
     @ManyToMany
     @JoinTable(
             name = "game_platform",
-            joinColumns = @JoinColumn(name="game_id"),
+            joinColumns = @JoinColumn(name = "game_id"),
             inverseJoinColumns = @JoinColumn(name = "platform_id")
     )
     private Set<Platform> platforms = new HashSet<>();
@@ -53,8 +59,8 @@ public class Game {
     @ManyToMany
     @JoinTable(
             name = "game_genre",
-            joinColumns = @JoinColumn(name="game_id"),
-            inverseJoinColumns = @JoinColumn(name="genre_id")
+            joinColumns = @JoinColumn(name = "game_id"),
+            inverseJoinColumns = @JoinColumn(name = "genre_id")
     )
     private Set<Genre> genres = new HashSet<>();
     @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -132,5 +138,13 @@ public class Game {
 
     public void setReviews(List<Review> reviews) {
         this.reviews = reviews;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
     }
 }

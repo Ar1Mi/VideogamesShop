@@ -1,12 +1,7 @@
 package domain.videogamesshop.controller;
 
-import domain.videogamesshop.model.Game;
-import domain.videogamesshop.model.Genre;
-import domain.videogamesshop.model.Platform;
-import domain.videogamesshop.service.FileService;
-import domain.videogamesshop.service.GameService;
-import domain.videogamesshop.service.GenreService;
-import domain.videogamesshop.service.PlatformService;
+import domain.videogamesshop.model.*;
+import domain.videogamesshop.service.*;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -15,9 +10,11 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.security.Principal;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Controller
 public class GameController {
@@ -34,18 +31,73 @@ public class GameController {
     @Autowired
     private GenreService genreService;
 
+    @Autowired
+    private ReviewService reviewService;
+
+    @Autowired
+    private CustomUserDetailsService userService;
+
+    @Autowired
+    private CartService cartService;
+
+//    @GetMapping("/games")
+//    public String showGamesList(
+//            @RequestParam(name = "keyword", required = false) String keyword,
+//            @RequestParam(name = "sort", required = false, defaultValue = "none") String sortField,
+//            @RequestParam(name = "direction", required = false, defaultValue = "asc") String direction,
+//            Model model) {
+//        List<Game> games = gameService.searchAndSortGames(keyword, sortField, direction);
+//
+//        model.addAttribute("games", games);
+//        model.addAttribute("keywords", keyword);
+//        model.addAttribute("direction", direction);
+//        return "index";
+//    }
+
     @GetMapping("/games")
-    public String showGamesList(Model model) {
-        List<Game> games = gameService.findAllGames();
+    public String showGamesList(
+            @RequestParam(name = "keyword", required = false) String keyword,
+            @RequestParam(name = "sort", required = false, defaultValue = "none") String sortField,
+            @RequestParam(name = "direction", required = false, defaultValue = "asc") String direction,
+            Principal principal,
+            Model model
+    ) {
+        List<Game> games = gameService.searchAndSortGames(keyword, sortField, direction);
+
+        Set<Long> cartGameIds = new HashSet<>();
+        if (principal != null) {
+            User user = userService.findByLogin(principal.getName()).orElse(null);
+            if (user != null) {
+                Cart cart = cartService.getCartByUser(user);
+                if (cart != null) {
+                    cartGameIds = cart.getGames().stream()
+                            .map(Game::getId)
+                            .collect(Collectors.toSet());
+                }
+            }
+        }
+
         model.addAttribute("games", games);
+        model.addAttribute("keyword", keyword);
+        model.addAttribute("direction", direction);
+        model.addAttribute("cartGameIds", cartGameIds);
+
         return "index";
     }
+
 
     @GetMapping("/games/details/{id}")
     public String showGameDetails(@PathVariable Long id, Model model) {
         Game game = gameService.findById(id)
                 .orElseThrow(() -> new RuntimeException("Game not found"));
+        List<Review> reviews = reviewService.findByGame(game);
+
+        Review newReview = new Review();
+        newReview.setGame(game);
+
         model.addAttribute("game", game);
+        model.addAttribute("review", newReview);
+        model.addAttribute("reviews", reviews);
         return "details";
     }
 
@@ -64,7 +116,7 @@ public class GameController {
                              BindingResult bindingResult,
                              @RequestParam(value="genreIds", required = false) List<Long> genreIds,
                              @RequestParam(value="platformIds", required = false) List<Long> platformIds,
-                             @RequestParam("file") MultipartFile file, // получаем загруженный файл
+                             @RequestParam("file") MultipartFile file,
                              Model model) {
         if (bindingResult.hasErrors()) {
             return "edit";
@@ -77,11 +129,9 @@ public class GameController {
             if (oldGame.getImageUrl() != null && !oldGame.getImageUrl().isBlank()) {
                 fileService.deleteFile(oldGame.getImageUrl());
             }
-            // Сохраняем новый
             String newFilename = fileService.saveFile(file);
             game.setImageUrl(newFilename);
         } else {
-            // Если новый файл не загружен, оставляем старый путь к картинке
             game.setImageUrl(oldGame.getImageUrl());
         }
 
@@ -107,17 +157,16 @@ public class GameController {
 
         gameService.save(game);
 
-        return "redirect:/";
+        return "redirect:/games";
     }
 
     @GetMapping("/games/new")
     public String showCreateForm(Model model) {
-        // Создаём пустой объект Game для привязки формы
         Game newGame = new Game();
         model.addAttribute("game", newGame);
         model.addAttribute("genres", genreService.findAllGenres());
         model.addAttribute("platforms", platformService.findAll());
-        return "new"; // возврат к шаблону new.html
+        return "new";
     }
 
     @PostMapping("/games/new")
@@ -127,11 +176,9 @@ public class GameController {
                              @RequestParam(value="platformIds", required = false) List<Long> platformIds,
                              @RequestParam("file") MultipartFile file) {
         if (bindingResult.hasErrors()) {
-            // Если есть ошибки валидации, возвращаем ту же форму
             return "new";
         }
 
-        // Если пользователь загрузил файл
         if (file != null && !file.isEmpty()) {
             String filename = fileService.saveFile(file);
             game.setImageUrl(filename);
@@ -157,29 +204,22 @@ public class GameController {
         }
         game.setPlatforms(selectedPlatforms);
 
-        // Сохраняем в БД
         gameService.save(game);
 
-        // Перенаправляем на главную, где список всех игр
-        return "redirect:/";
+        return "redirect:/games";
     }
 
     @GetMapping("/games/delete/{id}")
     public String deleteGame(@PathVariable Long id) {
-        // 1. Найти игру в БД (чтобы узнать, есть ли связанный файл)
         Game game = gameService.findById(id)
                 .orElseThrow(() -> new RuntimeException("Game not found"));
 
-        // 2. Если у игры есть загруженная картинка, удаляем её
         if (game.getImageUrl() != null && !game.getImageUrl().isBlank()) {
             fileService.deleteFile(game.getImageUrl());
         }
 
-        // 3. Удаляем запись из БД
         gameService.deleteById(id);
 
-        // 4. Редирект на главную страницу (список игр)
-        return "redirect:/";
+        return "redirect:/games";
     }
-
 }
